@@ -8,10 +8,8 @@ Description:
     Trains the RandomForest.
 """
 
-from model.data_generator import read_data
-
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from utils.chorus.satb import Satb
@@ -22,58 +20,68 @@ import pandas as pd
 
 def train():
 
-    train_X, train_S, train_A, train_T, train_B = read_data("./data/train.txt")
-    train_Y = np.hstack((train_S, train_A, train_T, train_B))
+    df = pd.read_csv(
+        "./data/chords.csv",
+        header=0
+        )
 
-    if train_X.shape[0] != train_Y.shape[0]:
-        raise ValueError("Train inputs and outputs must have similar shape.", train_X.shape, train_Y.shape)
+    # split outputs    
+    Y = df[['next_s', 'next_a', 'next_t', 'next_b']].copy()
+    df.drop(['next_s', 'next_a', 'next_t', 'next_b'], axis=1, inplace=True)
 
-    val_X, val_S, val_A, val_T, val_B = read_data("./data/val.txt")
-    val_Y = np.hstack((val_S, val_A, val_T, val_B))
+    # feature selection (remove info about cur chord except for voicings)
+    df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
+    columns = df.columns.values.tolist()
 
-    test_X, test_S, test_A, test_T, test_B = read_data("./data/val.txt")
-    test_Y = np.hstack((test_S, test_A, test_T, test_B))
-
-    if test_X.shape[0] != test_Y.shape[0]:
-        raise ValueError("Test inputs and outputs must have similar shape.", test_X.shape, test_Y.shape)
-    
-
-    # clf = MultiOutputClassifier(
-    #     RandomForestClassifier(n_estimators=100)
-    # )
+    # train/test split
+    X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.2)
     clf = RandomForestClassifier(n_estimators=100)
 
-    clf.fit(train_X, train_Y)
+    clf.fit(X_train, Y_train)
 
     """
     PREDICTION
     """
     # get predictions
-    pred_Y = clf.predict(test_X)
+    Y_pred = clf.predict(X_test)
+    Y_out = np.vectorize(num_to_note)(Y_pred)
+
+    out_df = pd.DataFrame(
+        X_test, 
+        columns=columns
+        )
+
+    out_df['cur_s'] = out_df['cur_s'].apply(num_to_note)
+    out_df['cur_a'] = out_df['cur_a'].apply(num_to_note)
+    out_df['cur_t'] = out_df['cur_t'].apply(num_to_note)
+    out_df['cur_b'] = out_df['cur_b'].apply(num_to_note)
+        
+    Y_test = Y_test.applymap(num_to_note)
+    out_df = pd.concat([out_df, Y_test], axis=1)
+    out_df['next_pred'] = Y_out.tolist()
+    print(out_df.head())
+    exit()
+    """
+    LEFT OFF HERE
+
+    1. convert cur chord to 1 column where each element is a list
+    2. same with next gt
+    3. create flags for easy scaling of chords
+    4. same for one hot encoding
+    5. fix accuracy
+    6. notes correct and num correct
+    """
 
     # get accuracy
+    """
     f1 = [0] * 4
     precision = [0] * 4
     recall = [0] * 4
-    pred_val_Y = clf.predict(val_X)
     for i in range(4):
-        f1[i] = f1_score(val_Y[:, i], pred_val_Y[:, i], average='micro')
-        precision[i] = precision_score(val_Y[:, i], pred_val_Y[:, i], average='micro')
-        recall[i] = recall_score(val_Y[:, i], pred_val_Y[:, i], average='micro')
-
-    # get gt key
-    key_num = test_X[:, :12]
-    key = np.zeros((test_X.shape[0], 2), dtype=np.uint8)
-    key[:, 0] = np.argmax(key_num, axis=1)
-    key[:, 1] = test_X[:, 12]
-
-    # get gt cur chord
-    test_cur = test_X[:, 13:17]
-
-    # get gt next chord info
-    next_deg = np.argmax(test_X[:, 17:24], axis=1) + 1
-    next_sev = test_X[:, 24].astype('uint8')
-    next_inv = np.argmax(test_X[:, 25:29], axis=1)
+        f1[i] = f1_score(Y_test[:, i], Y_pred[:, i], average='micro')
+        precision[i] = precision_score(Y_test[:, i], Y_pred[:, i], average='micro')
+        recall[i] = recall_score(Y_test[:, i], Y_pred[:, i], average='micro')
+    """
 
     # convert all ints to notes
     satb = Satb()
@@ -108,26 +116,6 @@ def train():
                 count += 1
         num_correct[count] += 1
         notes_correct[i] = count
-
-
-    df = pd.DataFrame(columns=[
-        'key', 'maj/min', 'cur_chord',
-        'next_deg', 'next_sev', 'next_inv',
-        'pred_next', 'gt_next', 'notes_correct'
-        ])
-
-    df['key'] = key_note
-    df['maj/min'] = key[:, 1]
-
-    df['cur_chord'] = test_cur
-
-    df['next_deg'] = next_deg
-    df['next_sev'] = next_sev
-    df['next_inv'] = next_inv
-
-    df['pred_next'] = pred_out
-    df['gt_next'] = test_out
-    df['notes_correct'] = notes_correct
 
     print("\n")
     print("Notes correct\t# chords\t% chords")
