@@ -14,36 +14,103 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 
 from utils.chorus.satb import Satb
 from utils.utils import num_to_note
+import utils.metrics as metrics
 
 import numpy as np
 import pandas as pd
+import time
+
+RANDOM_STATE = 42
 
 def train():
+    times = {}
+    times['start'] = time.time()
 
     df = pd.read_csv(
         "./data/chords.csv",
-        header=0
+        header=0,
+        dtype=np.int8
         )
+    
+    print(df['maj_min'].value_counts(normalize=True))
+    print("\n")
+    print(df['next_degree'].value_counts(normalize=True))
+    print("\n")
+    print(df['next_seventh'].value_counts(normalize=True))
+    print("\n")
+    print(df['next_inversion'].value_counts(normalize=True))
 
     # split outputs    
     Y = df[['next_s', 'next_a', 'next_t', 'next_b']].copy()
     df.drop(['next_s', 'next_a', 'next_t', 'next_b'], axis=1, inplace=True)
 
-    # feature selection (remove info about cur chord except for voicings)
+    # feature selection
+    # remove info about cur chord except for voicings
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
+
+    # consolidate next_seventh and next_inversion to get rid of boolean in next_seventh
+    # df['next_inv'] = df['next_seventh']*3 + df['next_inversion']
+    # df.drop(['next_seventh', 'next_inversion'], axis=1, inplace=True)
+
+    # consolidate tonic and maj_min to get rid of boolean in maj_min
+    # df['key'] = df['maj_min']*12 + df['tonic']
+    # df.drop(['maj_min', 'tonic'], axis=1, inplace=True)
+
+    print(df.head())
+
     columns = df.columns.values.tolist()
 
     # train/test split
     X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.2)
-    clf = RandomForestClassifier(n_estimators=100)
 
+    times['data'] = time.time() - times['start']
+
+    # train model
+    clf = RandomForestClassifier(
+        n_estimators=100,
+        random_state=RANDOM_STATE
+        )
     clf.fit(X_train, Y_train)
+
+    feature_importances = pd.DataFrame(
+        clf.feature_importances_,
+        index = X_train.columns,
+        columns=['importance']
+        ).sort_values('importance', ascending=False)
+
+    print("\n" + feature_importances.to_string())
+
+    times['train'] = time.time() - times['data']  - times['start']
 
     """
     PREDICTION
     """
     # get predictions
     Y_pred = clf.predict(X_test)
+    Y_test = np.asarray(Y_test)
+
+    times['predict'] = time.time() - times['train'] - times['start']
+    
+    all_metrics = metrics.accuracy_np(Y_test, Y_pred)
+
+    accuracy = pd.DataFrame(
+        index=['total', 'voice', 'set'],
+        columns=['mean', 'std']
+        )
+    accuracy['mean'] = [np.mean(x) for x in all_metrics]
+    accuracy['std'] = [np.std(x) for x in all_metrics]
+    accuracy['25%'] = [np.percentile(x, 25) for x in all_metrics]
+    accuracy['50%'] = [np.percentile(x, 50) for x in all_metrics]
+    accuracy['75%'] = [np.percentile(x, 75) for x in all_metrics]
+    print("\n" + accuracy.to_string())
+
+    times['metrics'] = time.time() - times['predict'] - times['start']
+    print("\nExecution time:")
+    for key, val in times.items():
+        if key != "start":
+            print("{}: {:.3f}".format(key, val))
+    exit()
+
     Y_out = np.vectorize(num_to_note)(Y_pred)
 
     out_df = pd.DataFrame(
