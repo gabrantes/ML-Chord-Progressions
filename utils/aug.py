@@ -9,7 +9,6 @@ Description:
 """
 
 from utils.chorus.satb import Satb
-from utils.utils import one_hot
 import numpy as np
 
 def augment(progression: list) -> list:
