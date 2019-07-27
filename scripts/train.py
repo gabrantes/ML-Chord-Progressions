@@ -60,7 +60,8 @@ def train(verbose=False):
         n_estimators=100,
         random_state=42,
         bootstrap=True,
-        max_features=8
+        max_features=9,
+        max_depth=25
         )
     clf.fit(X_train, Y_train)
 
