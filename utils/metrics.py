@@ -11,14 +11,15 @@ Description:
 import numpy as np
 import pandas as pd
 
-SET_COEF = 0.4
-VOICE_COEF = 0.6
+NOTE_COEF = 0.5
+INVERSION_COEF = 0.3
+VOICE_COEF = 0.2
 
 def accuracy_df(gt_next, pred_next):
     all_metrics = accuracy_np(gt_next, pred_next)
 
     acc = pd.DataFrame(
-        index=['total', 'voice', 'set'],
+        index=['total', 'note', 'inversion', 'voice'],
         columns=['mean', 'std', '25%', '50%', '75%']
         )
     acc['mean'] = [np.mean(x) for x in all_metrics]
@@ -34,14 +35,18 @@ def accuracy_np(gt_next, pred_next):
         raise ValueError("gt_next and pred_next must both have chord shape.", gt_next.shape, pred_next.shape)
 
     total_accuracy = np.zeros((gt_next.shape[0], 1))
+    note_accuracy = np.zeros_like(total_accuracy)
+    inversion_accuracy = np.zeros_like(total_accuracy)
     voice_accuracy = np.zeros_like(total_accuracy)
-    set_accuracy = np.zeros_like(total_accuracy)
+
     for i in range(gt_next.shape[0]):
-        total, voice, set_ = accuracy(gt_next[i].tolist(), pred_next[i].tolist())
+        total, note, inversion, voice = accuracy(gt_next[i].tolist(), pred_next[i].tolist())
         total_accuracy[i] = total
+        note_accuracy[i] = note
+        inversion_accuracy[i] = inversion
         voice_accuracy[i] = voice
-        set_accuracy[i] = set_
-    return total_accuracy, voice_accuracy, set_accuracy    
+
+    return total_accuracy, note_accuracy, inversion_accuracy, voice_accuracy    
 
 def accuracy(gt_next, pred_next):
     """
@@ -54,31 +59,37 @@ def accuracy(gt_next, pred_next):
     Returns:
         Accuracy score as float between 0 and 1.
     """
+    # get notes of chords, octave independent
     gt_set = set([note % 12 for note in gt_next])
     pred_set = set([note % 12 for note in pred_next])
 
-    # intersection over union
-    set_score = len(gt_set.intersection(pred_set)) / len(gt_set.union(pred_set))
+    # score 
+    note_score = len(gt_set.intersection(pred_set)) / len(gt_set.union(pred_set))
 
-    voice_scores = [0] * 4
-    voice_coefs = [0.1, 0.1, 0.1, 0.7]  # weight bass more because bass note also determines inversion
+    # score inversion (bass note)
+    gt_bass = gt_next[3] % 12
+    pred_bass = gt_next[3] % 12
+    if pred_bass == gt_bass:
+        inversion_score = 1
+    elif pred_bass in gt_set:
+        inversion_score = 0.25
+    else:
+        inversion_score = 0
 
+    # score 3 upper voices
+    voice_scores = np.zeros((3))
     for i in range(3):
         if pred_next[i] == gt_next[i]:
             voice_scores[i] = 1
         elif pred_next[i] in gt_set:
-            voice_scores[i] = 0.5
+            voice_scores[i] = 0.75
+    voice_score = np.mean(voice_scores) 
 
-    # score bass note differently
-    if pred_next[3] == gt_next[3]:
-        voice_scores[3] = 1
-        
-    voice_scores = [w*x for (w, x) in zip(voice_coefs, voice_scores)]
-    voice_total = sum(voice_scores)
+    total_accuracy = (note_score * NOTE_COEF) \
+                    + (inversion_score * INVERSION_COEF) \
+                    + (voice_score * VOICE_COEF)                    
 
-
-    total_accuracy = (voice_total * VOICE_COEF) + (set_score * SET_COEF)
-    return total_accuracy, voice_total, set_score
+    return total_accuracy, note_score, inversion_score, voice_score
 
 
 
