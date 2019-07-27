@@ -39,13 +39,30 @@ def preprocess(input_file: str, output_file: str):
                 progressions.append(elements)
     f.close()
 
-    # convert all notes to ints
-    for prog in progressions:
+    satb = Satb()
+
+    for idx, prog in enumerate(progressions):
+        # convert all notes to ints
         for i in range(len(prog)):
             if not prog[i].isdigit():  # if note
                 prog[i] = note_to_num(prog[i])
             else:
                 prog[i] = int(prog[i])
+        # ensure all chords are valid
+        if not satb.valid_chord(prog[5:9]):
+            raise ValueError(
+                "Current chord is invalid.",
+                idx,
+                prog[5:9],
+                [num_to_note(el) for el in prog[5:9]]
+                )
+        if not satb.valid_chord(prog[12:16]):
+            raise ValueError(
+                "Next chord is invalid.",
+                idx,
+                prog[12:16],
+                [num_to_note(el) for el in prog[12:16]]
+                )
         
     # remove duplicates and keep track of unique progressions using a set
     progression_set = set([tuple(prog) for prog in progressions])
