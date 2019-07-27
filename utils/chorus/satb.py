@@ -39,8 +39,18 @@ class Satb():
                 return False
 
         # check for voice crossing
-        for i in range(3):
+        # check if voice is lower than the voice below it
+        for i in range(3):            
             if chord[i] < chord[i+1]:
+                return False
+        # check if voice is higher than the voice above it
+        for i in range(3, 0, -1):
+            if chord[i] > chord[i-1]:
+                return False
+
+        # check for spacing larger than an octave in upper 3 voices
+        for i in range(2):
+            if chord[i] - chord[i+1] > 12:
                 return False
         return True
 
