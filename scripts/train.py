@@ -19,8 +19,9 @@ import utils.metrics as metrics
 import numpy as np
 import pandas as pd
 import time
+import argparse
 
-def train():
+def train(verbose=False):
     times = {}
     t_start = time.time()
 
@@ -30,14 +31,15 @@ def train():
         dtype=np.int8
         )
     
-    # print(df['maj_min'].value_counts(normalize=True))
-    # print("\n")
-    # print(df['next_degree'].value_counts(normalize=True))
-    # print("\n")
-    # print(df['next_seventh'].value_counts(normalize=True))
-    # print("\n")
-    # print(df['next_inversion'].value_counts(normalize=True))
-    # print("\n")
+    if verbose > 1:
+        print(df['maj_min'].value_counts(normalize=True))
+        print("\n")
+        print(df['next_degree'].value_counts(normalize=True))
+        print("\n")
+        print(df['next_seventh'].value_counts(normalize=True))
+        print("\n")
+        print(df['next_inversion'].value_counts(normalize=True))
+        print("\n")
 
     # split outputs    
     Y = df[['next_s', 'next_a', 'next_t', 'next_b']].copy()
@@ -45,33 +47,17 @@ def train():
 
     # feature selection
     # remove info about cur chord except for voicings
-    df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
-
-    """
-    # consolidate next_seventh and next_inversion to get rid of boolean in next_seventh
-    df['next_inv'] = df['next_seventh']*3 + df['next_inversion']
-    df.drop(['next_seventh', 'next_inversion'], axis=1, inplace=True)
-    """
-
-    """
-    # consolidate tonic and maj_min to get rid of boolean in maj_min
-    df['key'] = df['maj_min']*12 + df['tonic']
-    df.drop(['maj_min', 'tonic'], axis=1, inplace=True)
-    """
-
-    # print(df.head())
-
-    columns = df.columns.values.tolist()
+    df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)\
 
     # train/test split
-    X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.2)
+    X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1)
 
     t_data =  time.time()
     times['data'] = t_data - t_start
 
     # train model
     clf = RandomForestClassifier(
-        n_estimators=25,
+        n_estimators=100,
         random_state=42,
         bootstrap=True,
         max_features=8
@@ -84,7 +70,8 @@ def train():
         columns=['importance']
         ).sort_values('importance', ascending=False)
 
-    print('\nFeature Importances:\n' + feature_importances.to_string())
+    if verbose > 1:
+        print('\nFeature Importances:\n' + feature_importances.to_string())
 
     t_train = time.time()
     times['train'] = t_train - t_data
@@ -96,15 +83,23 @@ def train():
     t_predict = time.time()
     times['predict'] = t_predict - t_train
     
-    accuracy = metrics.accuracy_df(Y_test, Y_pred)
-    print('\nAccuracy:\n' + accuracy.to_string())
+    total_acc, notes_acc, inversion_acc, voicing_acc = metrics.accuracy_np(Y_test, Y_pred)
+    accuracy_df = pd.DataFrame({
+        'total_accuracy': total_acc,
+        'notes': notes_acc,
+        'inversion': inversion_acc,
+        'voicing': voicing_acc
+    })
+    if verbose > 0:
+        print("\nMetrics:")
+        print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])
 
     t_metrics = time.time()
     times['metrics'] = t_metrics - t_predict   
 
     out_df = pd.DataFrame(
         X_test, 
-        columns=columns
+        columns=X_test.columns
         )
 
     out_df['tonic'] = out_df['tonic'].apply(num_to_note)
@@ -120,16 +115,38 @@ def train():
     pred_next = np.vectorize(num_to_note)(Y_pred)
     out_df['pred_next'] = pred_next.tolist()
 
-    print("\nOutput:\n")
-    print(out_df.head())
+    out_df['total_accuracy'] = total_acc
+
+    out_df = out_df[[
+        'tonic', 'maj_min', 'cur', 
+        'next_degree', 'next_seventh', 'next_inversion',
+        'gt_next', 'pred_next', 'total_accuracy']]
+
+    if verbose > 0:
+        print("\nOutput:")
+        print(out_df.head())
     out_df.to_csv('output.csv')
 
     t_output = time.time()
-    times['output'] = t_output - t_metrics
+    times['output'] = t_output - t_metrics   
 
-    time_str = "\nTotal: {:.3f}s, Data: {:.3f}s, Train: {:.3f}s, Predict: {:.3f}s, Metrics: {:.3f}s, Output: {:.3f}s" \
-        .format(t_output - t_start, times['data'], times['train'], times['predict'], times['metrics'], times['output'])
-    print(time_str)
+    if verbose > 0:
+        time_str = "\nTotal: {:.3f}s".format(t_output-t_start)
+        time_str += ", Data: {:.3f}s".format(times['data'])
+        time_str += ", Train: {:.3f}s".format(times['train'])
+        time_str += ", Predict: {:.3f}s".format(times['predict'])
+        time_str += ", Metrics: {:.3f}s".format(times['metrics'])
+        time_str += ", Output: {:.3f}s".format(times['output'])
+        print(time_str)
 
 if __name__ == "__main__":    
-    train()
+    parser  = argparse.ArgumentParser(
+        description='Train and validate random forest classifier.'
+        )
+    parser.add_argument("-v", "--verbose",
+        help="0: silent | 1: accuracy, output | \
+            2: dataset distribution, feature importances, accuracy, output | DEFAULT: 1",
+        default=1)
+    args = parser.parse_args()
+
+    train(verbose=int(args.verbose))

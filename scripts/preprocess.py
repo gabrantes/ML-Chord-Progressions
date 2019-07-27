@@ -149,7 +149,10 @@ def preprocess(input_file: str, output_file: str):
     print("Number of prog. with seventh chords:\t{}\t{}".format(end_sev_chords, end_sev_chords/end_num_chords))
 
 if __name__ == "__main__":
-    parser  = argparse.ArgumentParser(description='Transform notes into ints, and create augmentations by transposing to random keys.')
+    parser  = argparse.ArgumentParser(
+        description='Transform notes into ints, and create augmentations \
+            by transposing to random keys.'
+        )
     parser.add_argument("--input", 
         help="Filepath to dataset. DEFAULT: ./data/seeds.csv",
         default="./data/seeds.csv")
