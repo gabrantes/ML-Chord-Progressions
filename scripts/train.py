@@ -73,7 +73,7 @@ def train():
     clf = RandomForestClassifier(
         n_estimators=25,
         random_state=42,
-        bootstrap=False,
+        bootstrap=True,
         max_features=8
         )
     clf.fit(X_train, Y_train)
@@ -84,7 +84,7 @@ def train():
         columns=['importance']
         ).sort_values('importance', ascending=False)
 
-    print("\n" + feature_importances.to_string())
+    print('\nFeature Importances:\n' + feature_importances.to_string())
 
     t_train = time.time()
     times['train'] = t_train - t_data
@@ -97,86 +97,39 @@ def train():
     times['predict'] = t_predict - t_train
     
     accuracy = metrics.accuracy_df(Y_test, Y_pred)
-    print("\n" + accuracy.to_string())
+    print('\nAccuracy:\n' + accuracy.to_string())
 
     t_metrics = time.time()
-    times['metrics'] = t_metrics - t_predict
-    
-    time_str = "\nTotal: {:.3f}s, Data: {:.3f}s, Train: {:.3f}s, Predict: {:.3f}s, Metrics: {:.3f}s" \
-        .format(t_metrics - t_start, times['data'], times['train'], times['predict'], times['metrics'])
-    print(time_str)
-    exit()
-    """
-    LEFT OFF HERE
-    """
-    Y_out = np.vectorize(num_to_note)(Y_pred)
+    times['metrics'] = t_metrics - t_predict   
 
     out_df = pd.DataFrame(
         X_test, 
         columns=columns
         )
 
-    out_df['cur_s'] = out_df['cur_s'].apply(num_to_note)
-    out_df['cur_a'] = out_df['cur_a'].apply(num_to_note)
-    out_df['cur_t'] = out_df['cur_t'].apply(num_to_note)
-    out_df['cur_b'] = out_df['cur_b'].apply(num_to_note)
+    out_df['tonic'] = out_df['tonic'].apply(num_to_note)
 
-    exit()
-    """
-    LEFT OFF HERE
-    """
-        
-    Y_test = np.apply_along_axis()
-    out_df = pd.concat([out_df, Y_test], axis=1)
-    out_df['next_pred'] = Y_out.tolist()
-    print(out_df.head())    
+    for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
+        out_df[key] = out_df[key].apply(num_to_note)
+    out_df['cur'] = out_df[['cur_s', 'cur_a', 'cur_t', 'cur_b']].values.tolist()
+    out_df.drop(['cur_s', 'cur_a', 'cur_t', 'cur_b'], axis=1, inplace=True)
 
-    # get accuracy
+    gt_next = np.vectorize(num_to_note)(Y_test)
+    out_df['gt_next'] = gt_next.tolist()
 
-    # convert all ints to notes
-    satb = Satb()
+    pred_next = np.vectorize(num_to_note)(Y_pred)
+    out_df['pred_next'] = pred_next.tolist()
 
-    pred_out = [None] * pred_Y.shape[0]
-    for i in range(pred_Y.shape[0]):
-        try:
-            pred_out[i] = [num_to_note(el) for el in satb.unscale(pred_Y[i, :])]
-        except Exception as e:
-            pred_out[i] = ["INVALID"]
+    print("\nOutput:\n")
+    print(out_df.head())
+    out_df.to_csv('output.csv')
 
-    # pred_Y = np.apply_along_axis(satb.unscale, 1, pred_Y)
-    test_Y = np.apply_along_axis(satb.unscale, 1, test_Y)
-    test_cur = np.apply_along_axis(satb.unscale, 1, test_cur)
+    t_output = time.time()
+    times['output'] = t_output - t_metrics
 
-    np_to_note = np.vectorize(num_to_note)
-
-    # pred_out = np_to_note(pred_Y).tolist()
-    test_out = np_to_note(test_Y).tolist()
-    test_cur = np_to_note(test_cur).tolist()
-
-    key_note = np_to_note(key[:, 0]).tolist()
-
-    num_correct = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
-    notes_correct = [0] * len(test_out)
-    for i in range(len(test_out)):
-        count = 0
-        for j in range(4):
-            if len(pred_out[i]) != 4:
-                break
-            if test_out[i][j] == pred_out[i][j]:
-                count += 1
-        num_correct[count] += 1
-        notes_correct[i] = count
-
-    print("\n")
-    print("Notes correct\t# chords\t% chords")
-    for key, val in num_correct.items():
-        print("{}\t\t{}\t\t{}".format(key, val, val/len(test_Y)))
-            
-    print("\nPrecision:\n\t{}".format(precision))
-    print("\nRecall:\n\t{}".format(recall))
-    print("\nF1:\n\t{}".format(f1))
-
-    df.to_csv('output.csv')
+    time_str = "\nTotal: {:.3f}s, Data: {:.3f}s, Train: {:.3f}s, Predict: {:.3f}s, Metrics: {:.3f}s, Output: {:.3f}s" \
+        .format(t_output - t_start, times['data'], times['train'], times['predict'], times['metrics'], times['output'])
+    print(time_str)
 
 if __name__ == "__main__":    
     train()
