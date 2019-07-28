@@ -123,6 +123,7 @@ def train(verbose=False):
 
     out_df['total_accuracy'] = total_acc
 
+    # rearrange / reorganize columns
     out_df = out_df[[
         'tonic', 'maj_min', 'cur', 
         'next_degree', 'next_seventh', 'next_inversion',
