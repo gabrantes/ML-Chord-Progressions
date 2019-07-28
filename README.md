@@ -1,4 +1,4 @@
-# ChordNet [WIP]
+# ML Chord Progressions [WIP]
 
 In traditional music theory, there are many guidelines and rules when writing chord progressions for four voice parts. This is also referred to as four-part harmony. This project develops a uses a multi-output Random Forest Classifier to take a current chord and return the correct voicings for the next chord.
 
@@ -18,7 +18,7 @@ These instructions will get you a copy of the project up and running on your loc
 1. Clone repository.
 
 	 ```
-   git clone https://github.com/gabrantes/ChordNet.git
+   git clone https://github.com/gabrantes/ML-Chord-Progressions.git
    ``` 
   
 2. Install requirements using pip OR pipenv.
@@ -36,7 +36,7 @@ These instructions will get you a copy of the project up and running on your loc
 3. Add project to PYTHONPATH so modules can be found.
 
    ```
-   set PYTHONPATH=path/to/ChordNet
+   set PYTHONPATH=path/to/ML-Chord-Progressions
    ```
 
 ### Running
@@ -46,7 +46,7 @@ These instructions will get you a copy of the project up and running on your loc
    python scripts/preprocess.py
    ```
    
-2. Train model.
+2. Train model and output predictions to `./output.csv`.
    ```
    python scripts/train.py
    ```
