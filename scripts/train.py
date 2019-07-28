@@ -9,7 +9,7 @@ Description:
 """
 
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from utils.chorus.satb import Satb
@@ -25,6 +25,7 @@ def train(verbose=False):
     times = {}
     t_start = time.time()
 
+    # read csv into DataFrame
     df = pd.read_csv(
         "./data/chords.csv",
         header=0,
@@ -46,7 +47,7 @@ def train(verbose=False):
     df.drop(['next_s', 'next_a', 'next_t', 'next_b'], axis=1, inplace=True)
 
     # feature selection
-    # remove info about cur chord except for voicings
+    # remove all info about current chord except for voicings
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)\
 
     # train/test split
@@ -57,11 +58,10 @@ def train(verbose=False):
 
     # train model
     clf = RandomForestClassifier(
-        n_estimators=100,
+        n_estimators=256,
         random_state=42,
         bootstrap=True,
-        max_features=9,
-        max_depth=25
+        max_features=9
         )
     clf.fit(X_train, Y_train)
 
@@ -84,6 +84,7 @@ def train(verbose=False):
     t_predict = time.time()
     times['predict'] = t_predict - t_train
     
+    # score accuracy
     total_acc, notes_acc, inversion_acc, voicing_acc = metrics.accuracy_np(Y_test, Y_pred)
     accuracy_df = pd.DataFrame({
         'total_accuracy': total_acc,
@@ -98,6 +99,7 @@ def train(verbose=False):
     t_metrics = time.time()
     times['metrics'] = t_metrics - t_predict   
 
+    # transform raw model output and format into DataFrame
     out_df = pd.DataFrame(
         X_test, 
         columns=X_test.columns
@@ -105,14 +107,17 @@ def train(verbose=False):
 
     out_df['tonic'] = out_df['tonic'].apply(num_to_note)
 
+    # current chord voicings: int -> note
     for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
         out_df[key] = out_df[key].apply(num_to_note)
     out_df['cur'] = out_df[['cur_s', 'cur_a', 'cur_t', 'cur_b']].values.tolist()
     out_df.drop(['cur_s', 'cur_a', 'cur_t', 'cur_b'], axis=1, inplace=True)
 
+    # ground truth next chord: int -> note
     gt_next = np.vectorize(num_to_note)(Y_test)
     out_df['gt_next'] = gt_next.tolist()
 
+    # predicted next chord: int -> note
     pred_next = np.vectorize(num_to_note)(Y_pred)
     out_df['pred_next'] = pred_next.tolist()
 
