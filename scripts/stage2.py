@@ -19,6 +19,7 @@ import utils.metrics as metrics
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import time
 import argparse
 
@@ -79,7 +80,7 @@ def train(verbose=False):
         random_state=RANDOM_STATE,
         bootstrap=True,
         max_features=4,
-        class_weight='balanced'
+        class_weight='balanced_subsample'
         )
     clf.fit(X_train, Y_train)
 
@@ -113,6 +114,14 @@ def train(verbose=False):
     if verbose > 0:
         print("\nMetrics:")
         print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])
+        hist = plt.hist(total_acc, bins='auto')
+        print(hist)
+        plt.title("Accuracy Histogram")
+        plt.xlabel("Accuracy")
+        plt.ylabel("Count")
+        for i in range(len(hist[0])):
+            plt.text(hist[1][i], hist[0][i], "{:.2f}".format(hist[0][i]))
+        plt.show(block=False)
 
     t_metrics = time.time()
     times['metrics'] = t_metrics - t_predict   
@@ -162,6 +171,7 @@ def train(verbose=False):
         time_str += ", Metrics: {:.3f}s".format(times['metrics'])
         time_str += ", Output: {:.3f}s".format(times['output'])
         print(time_str)
+        plt.show()
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
