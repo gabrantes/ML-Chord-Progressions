@@ -49,22 +49,23 @@ def train(verbose=False):
         classes=list(range(0, 12))
     )
 
-    Y = mlb.fit_transform(
+    next_notes = mlb.fit_transform(
         df[['next_s', 'next_a', 'next_t', 'next_b']].applymap(
             lambda x: x % 12
         ).values.tolist()
     )
+    for i in range(12):
+        df[str(i)] = next_notes[:, i].tolist()
 
     # remove outputs
+    Y = df[['next_s', 'next_a', 'next_t', 'next_b']].copy()
     df.drop(['next_s', 'next_a', 'next_t', 'next_b'], axis=1, inplace=True)
 
     # feature selection
     # remove all info about current chord except for voicings
+    df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
-    df.drop(['cur_s', 'cur_a', 'cur_t','cur_b'], axis=1, inplace=True)
-    df.drop(['next_inversion'], axis=1, inplace=True)
-
-    print(df.head())
+    df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
 
     # train/test split
     X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1, random_state=RANDOM_STATE)
@@ -100,16 +101,6 @@ def train(verbose=False):
 
     t_predict = time.time()
     times['predict'] = t_predict - t_train
-
-    for i in range(5):
-        print("\ngt:\t{}".format(Y_test[i]))
-        print("pred:\t{}".format(Y_pred[i]))
-    
-    new_acc = accuracy_score(Y_test, Y_pred)
-    print("\nAccuracy score:\t{}".format(new_acc))
-
-    exit()
-    """
     
     # score accuracy
     total_acc, notes_acc, inversion_acc, voicing_acc = metrics.accuracy_np(Y_test, Y_pred)
@@ -132,7 +123,7 @@ def train(verbose=False):
         columns=X_test.columns
         )
 
-    out_df['tonic'] = out_df['tonic'].apply(num_to_note)
+    # out_df['tonic'] = out_df['tonic'].apply(num_to_note)
 
     # current chord voicings: int -> note
     for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
@@ -152,8 +143,7 @@ def train(verbose=False):
 
     # rearrange / reorganize columns
     out_df = out_df[[
-        'tonic', 'maj_min', 'cur', 
-        'next_degree', 'next_seventh', 'next_inversion',
+        'cur', 
         'gt_next', 'pred_next', 'total_accuracy']]
 
     if verbose > 0:
@@ -172,8 +162,6 @@ def train(verbose=False):
         time_str += ", Metrics: {:.3f}s".format(times['metrics'])
         time_str += ", Output: {:.3f}s".format(times['output'])
         print(time_str)
-    
-    """
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
