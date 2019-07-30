@@ -52,7 +52,7 @@ def train(verbose=False):
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)\
 
     # train/test split
-    X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1)
+    X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.5)
 
     t_data =  time.time()
     times['data'] = t_data - t_start
@@ -97,8 +97,7 @@ def train(verbose=False):
         print("\nMetrics:")
         print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])
         hist = plt.hist(total_acc, bins='auto')
-        print(hist)
-        plt.title("Accuracy Histogram")
+        plt.title("Single-Stage: Accuracy Histogram")
         plt.xlabel("Accuracy")
         plt.ylabel("Count")
         for i in range(len(hist[0])):
