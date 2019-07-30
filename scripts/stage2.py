@@ -9,9 +9,8 @@ Description:
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
 
 from utils.chorus.satb import Satb
 from utils.utils import num_to_note
@@ -63,7 +62,7 @@ def train(verbose=False):
     df.drop(['next_s', 'next_a', 'next_t', 'next_b'], axis=1, inplace=True)
 
     # feature selection
-    # remove all info about current chord except for voicings
+    # remove unnecessary info
     df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
     df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
