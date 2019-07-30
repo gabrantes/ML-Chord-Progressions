@@ -1,5 +1,5 @@
 """
-Project: ChordNet
+Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 7/25/2019

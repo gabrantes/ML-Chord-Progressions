@@ -1,33 +1,27 @@
 """
-Project: ChordNet
+Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 7/21/2019
-Filename: stage2.py
+Date: 7/29/2019
+Filename: stage2_random.py
 Description: 
-    Perform randomized/grid search to optimize hyperparameters for stage 2.
+    Perform randomized search to optimize hyperparameters for stage 2.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import make_scorer
 
-from utils.chorus.satb import Satb
-from utils.utils import num_to_note, search_report
-import utils.metrics as metrics
+from utils.utils import search_report
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import time
 import argparse
 
 RANDOM_STATE = 42
 
 def search():
-    times = {}
-    t_start = time.time()
 
     # read csv into DataFrame
     df = pd.read_csv(
@@ -59,10 +53,7 @@ def search():
     df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
     extra[['next_degree', 'next_seventh', 'next_inversion']] = df[['next_degree', 'next_seventh', 'next_inversion']].copy()
-    df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)    
-
-    t_data =  time.time()
-    times['data'] = t_data - t_start
+    df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
 
     # Setup parameters and distributions for Randomized Search
     param_dist = {
@@ -82,7 +73,7 @@ def search():
         cv=5,
         scoring=scorer,
         random_state=RANDOM_STATE,
-        verbose=1
+        verbose=2
     )
     random_search.fit(df.to_numpy(dtype=np.int8), Y)
     
@@ -90,7 +81,7 @@ def search():
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Perform randomized/grid search to optimize hyperparameters for stage 2.'
+        description='Perform randomized search to optimize hyperparameters for stage 2.'
         )
 
     search()
