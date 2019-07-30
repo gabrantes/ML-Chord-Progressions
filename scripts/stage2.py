@@ -5,7 +5,7 @@ Email: gabrantes99@gmail.com
 Date: 7/29/2019
 Filename: stage2.py
 Description: 
-    Given stage 1 predictions (notes of next chord), predict voicings.
+    With stage 1 predictions (notes of next chord), predict voicings.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -76,12 +76,14 @@ def train(verbose=False):
     times['data'] = t_data - t_start    
 
     # train model
+    # (hyperparameters optimized by iterative randomized search and grid search)
     clf = RandomForestClassifier(
-        n_estimators=256,
-        random_state=RANDOM_STATE,
-        bootstrap=True,
-        max_features=4,
-        class_weight='balanced_subsample'
+        n_estimators=270,        
+        criterion='gini',
+        bootstrap=False,
+        max_features=2,
+        class_weight='balanced_subsample',
+        random_state=RANDOM_STATE
         )
     clf.fit(X_train, Y_train)
 

@@ -5,7 +5,7 @@ Email: gabrantes99@gmail.com
 Date: 7/21/2019
 Filename: train.py
 Description: 
-    Trains the RandomForest.
+    Train and evaluate the single-stage model.
 """
 
 from sklearn.model_selection import train_test_split

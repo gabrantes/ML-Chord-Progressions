@@ -5,7 +5,7 @@ Email: gabrantes99@gmail.com
 Date: 7/25/2019
 Filename: metrics.py
 Description: 
-    Custom accuracy function for comparing predicted chord to ground truth chord.
+    Custom accuracy functions for comparing predicted chordss to ground truth chords.
 """
 
 import numpy as np

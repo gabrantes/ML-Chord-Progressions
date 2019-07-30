@@ -2,10 +2,10 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 7/21/2019
-Filename: stage2.py
+Date: 7/29/2019
+Filename: combo.py
 Description: 
-    Determine bass note (inversion)
+    Links the Stage 1 Model and the Stage 2 Model for joint inferrence/evaluation.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
