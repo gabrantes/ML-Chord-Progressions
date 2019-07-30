@@ -2,10 +2,10 @@
 Project: ChordNet
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 7/21/2019
+Date: 7/29/2019
 Filename: stage2.py
 Description: 
-    Determine bass note (inversion)
+    Given stage 1 predictions (notes of next chord), predict voicings.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -63,15 +63,17 @@ def train(verbose=False):
 
     # feature selection
     # remove unnecessary info
+    extra = df[['tonic', 'maj_min']].copy()
     df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
+    extra[['next_degree', 'next_seventh', 'next_inversion']] = df[['next_degree', 'next_seventh', 'next_inversion']].copy()
     df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
 
     # train/test split
     X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1, random_state=RANDOM_STATE)
 
     t_data =  time.time()
-    times['data'] = t_data - t_start
+    times['data'] = t_data - t_start    
 
     # train model
     clf = RandomForestClassifier(
@@ -114,7 +116,6 @@ def train(verbose=False):
         print("\nMetrics:")
         print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])
         hist = plt.hist(total_acc, bins='auto')
-        print(hist)
         plt.title("Accuracy Histogram")
         plt.xlabel("Accuracy")
         plt.ylabel("Count")
@@ -131,7 +132,9 @@ def train(verbose=False):
         columns=X_test.columns
         )
 
-    # out_df['tonic'] = out_df['tonic'].apply(num_to_note)
+    for val in extra.columns.values.tolist():
+        out_df[val] = extra[val]
+    out_df['tonic'] = out_df['tonic'].apply(num_to_note)
 
     # current chord voicings: int -> note
     for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
@@ -151,7 +154,8 @@ def train(verbose=False):
 
     # rearrange / reorganize columns
     out_df = out_df[[
-        'cur', 
+        'tonic', 'maj_min', 'cur', 
+        'next_degree', 'next_seventh', 'next_inversion',
         'gt_next', 'pred_next', 'total_accuracy']]
 
     if verbose > 0:

@@ -108,72 +108,16 @@ def train(verbose=False):
     new_acc = accuracy_score(Y_test, Y_pred)
     print("\nAccuracy score:\t{}".format(new_acc))
 
-    exit()
-    """
-    
-    # score accuracy
-    total_acc, notes_acc, inversion_acc, voicing_acc = metrics.accuracy_np(Y_test, Y_pred)
-    accuracy_df = pd.DataFrame({
-        'total_accuracy': total_acc,
-        'notes': notes_acc,
-        'inversion': inversion_acc,
-        'voicing': voicing_acc
-    })
-    if verbose > 0:
-        print("\nMetrics:")
-        print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])
-
     t_metrics = time.time()
-    times['metrics'] = t_metrics - t_predict   
-
-    # transform raw model output and format into DataFrame
-    out_df = pd.DataFrame(
-        X_test, 
-        columns=X_test.columns
-        )
-
-    out_df['tonic'] = out_df['tonic'].apply(num_to_note)
-
-    # current chord voicings: int -> note
-    for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
-        out_df[key] = out_df[key].apply(num_to_note)
-    out_df['cur'] = out_df[['cur_s', 'cur_a', 'cur_t', 'cur_b']].values.tolist()
-    out_df.drop(['cur_s', 'cur_a', 'cur_t', 'cur_b'], axis=1, inplace=True)
-
-    # ground truth next chord: int -> note
-    gt_next = np.vectorize(num_to_note)(Y_test)
-    out_df['gt_next'] = gt_next.tolist()
-
-    # predicted next chord: int -> note
-    pred_next = np.vectorize(num_to_note)(Y_pred)
-    out_df['pred_next'] = pred_next.tolist()
-
-    out_df['total_accuracy'] = total_acc
-
-    # rearrange / reorganize columns
-    out_df = out_df[[
-        'tonic', 'maj_min', 'cur', 
-        'next_degree', 'next_seventh', 'next_inversion',
-        'gt_next', 'pred_next', 'total_accuracy']]
+    times['metrics'] = t_metrics - t_predict
 
     if verbose > 0:
-        print("\nOutput:")
-        print(out_df.head())
-    out_df.to_csv('output.csv')
-
-    t_output = time.time()
-    times['output'] = t_output - t_metrics   
-
-    if verbose > 0:
-        time_str = "\nTotal: {:.3f}s".format(t_output-t_start)
+        time_str = "\nTotal: {:.3f}s".format(t_metrics-t_start)
         time_str += ", Data: {:.3f}s".format(times['data'])
         time_str += ", Train: {:.3f}s".format(times['train'])
         time_str += ", Predict: {:.3f}s".format(times['predict'])
         time_str += ", Metrics: {:.3f}s".format(times['metrics'])
-        time_str += ", Output: {:.3f}s".format(times['output'])
         print(time_str)
-    
-    """
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
