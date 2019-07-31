@@ -3,9 +3,18 @@ Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 7/29/2019
-Filename: combo.py
+Filename: test_combo.py
 Description: 
-    Links the Stage 1 Model and the Stage 2 Model for joint inferrence/evaluation.
+    Links the Stage 1 Model and the Stage 2 Model for prototyping joint 
+    inferrence/evaluation.
+
+    Each stage is trained on a different 50% of the data.
+    Thus, stage 1 makes predictions on data it hasn't seen before, and those predictions
+    go to stage 2, which in turn makes predictions on data it hasn't seen before.
+
+    Because of this extreme 50% split, this script is only used as a prototype. For 
+    deployment, the two stages are trained using stage1.py and stage2.py, which both
+    train on a larger subset of the data.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -157,21 +166,15 @@ def train(verbose=False):
         plt.ylabel("Count")
         for i in range(len(hist[0])):
             plt.text(hist[1][i], hist[0][i], str(int(hist[0][i])))
-        #plt.show(block=False)
-        plt.show()
-
-    exit()
-    """
-    LEFT OFF HERE
-    """
+        plt.show(block=False)
 
     # transform raw model output and format into DataFrame
     out_df = pd.DataFrame(
-        X_test, 
-        columns=X_test.columns
+        A_feat, 
+        columns=A_feat.columns
         )
 
-    # out_df['tonic'] = out_df['tonic'].apply(num_to_note)
+    out_df['tonic'] = out_df['tonic'].apply(num_to_note)
 
     # current chord voicings: int -> note
     for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
@@ -191,20 +194,23 @@ def train(verbose=False):
 
     # rearrange / reorganize columns
     out_df = out_df[[
-        'cur', 
+        'tonic', 'maj_min',
+        'cur',
+        'next_degree', 'next_seventh', 'next_inversion',
         'gt_next', 'pred_next', 'total_accuracy']]
 
     if verbose > 0:
         print("\nOutput:")
         print(out_df.head())
-    out_df.to_csv('output.csv') 
+    out_df.to_csv('./output/combo_output.csv') 
 
     if verbose > 0:
         plt.show()
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Train and validate random forest classifier.'
+        description='Links the Stage 1 Model and the Stage 2 Model for prototyping joint \
+            inferrence/evaluation.'
         )
     parser.add_argument("-v", "--verbose",
         help="0: silent | 1: accuracy, output | \

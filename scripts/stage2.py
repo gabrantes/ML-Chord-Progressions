@@ -5,7 +5,7 @@ Email: gabrantes99@gmail.com
 Date: 7/29/2019
 Filename: stage2.py
 Description: 
-    With stage 1 predictions (notes of next chord), predict voicings.
+    Stage 2: With stage 1 predictions (notes of next chord), predict voicings.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -24,10 +24,11 @@ import argparse
 
 RANDOM_STATE = 42
 
-def train(verbose=False):
+def train(verbose=1):
     times = {}
     t_start = time.time()
-    print("\nLoading data...")
+    if verbose > 0:
+        print("\nLoading data...")
 
     # read csv into DataFrame
     df = pd.read_csv(
@@ -37,6 +38,7 @@ def train(verbose=False):
         )
     
     if verbose > 1:
+        print("\nData Distribution:")
         print(df['maj_min'].value_counts(normalize=True))
         print("\n")
         print(df['next_degree'].value_counts(normalize=True))
@@ -44,7 +46,6 @@ def train(verbose=False):
         print(df['next_seventh'].value_counts(normalize=True))
         print("\n")
         print(df['next_inversion'].value_counts(normalize=True))
-        print("\n")
 
     mlb = MultiLabelBinarizer(
         classes=list(range(0, 12))
@@ -75,7 +76,8 @@ def train(verbose=False):
 
     t_data =  time.time()
     times['data'] = t_data - t_start
-    print("\nTraining model...") 
+    if verbose > 0:
+        print("\nTraining model...") 
 
     # train model
     # (hyperparameters optimized by iterative randomized search and grid search as of 7/30/2019)
@@ -100,7 +102,8 @@ def train(verbose=False):
 
     t_train = time.time()
     times['train'] = t_train - t_data
-    print("\nGenerating predictions...")
+    if verbose > 0:
+        print("\nGenerating predictions...")
     
     # get predictions
     Y_pred = clf.predict(X_test)
@@ -108,7 +111,8 @@ def train(verbose=False):
 
     t_predict = time.time()
     times['predict'] = t_predict - t_train
-    print("\nScoring accuracy...")
+    if verbose > 0:
+        print("\nScoring accuracy...")
     
     # score accuracy
     total_acc, notes_acc, inversion_acc, voicing_acc = metrics.accuracy_np(Y_test, Y_pred)
@@ -168,7 +172,7 @@ def train(verbose=False):
     if verbose > 0:
         print("\nOutput:")
         print(out_df.head())
-    out_df.to_csv('output.csv')
+    out_df.to_csv('./output/stage2_output.csv')
 
     t_output = time.time()
     times['output'] = t_output - t_metrics   
@@ -185,7 +189,7 @@ def train(verbose=False):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Train and validate random forest classifier.'
+        description='Stage 2: With stage 1 predictions (notes of next chord), predict voicings.'
         )
     parser.add_argument("-v", "--verbose",
         help="0: silent | 1: accuracy, output | \

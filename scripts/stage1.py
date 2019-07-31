@@ -5,7 +5,7 @@ Email: gabrantes99@gmail.com
 Date: 7/21/2019
 Filename: stage1.py
 Description: 
-    Multi-label classification: determine notes in next chord
+    Stage 1: Determine notes in next chord (multi-label classification)
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -24,10 +24,11 @@ import argparse
 
 RANDOM_STATE = 42
 
-def train(verbose=False):
+def train(verbose=1):
     times = {}
     t_start = time.time()
-    print("\nLoading data...")
+    if verbose > 0:
+        print("\nLoading data...")
 
     # read csv into DataFrame
     df = pd.read_csv(
@@ -37,6 +38,7 @@ def train(verbose=False):
         )
     
     if verbose > 1:
+        print("\nData Distribution:")
         print(df['maj_min'].value_counts(normalize=True))
         print("\n")
         print(df['next_degree'].value_counts(normalize=True))
@@ -44,7 +46,6 @@ def train(verbose=False):
         print(df['next_seventh'].value_counts(normalize=True))
         print("\n")
         print(df['next_inversion'].value_counts(normalize=True))
-        print("\n")
 
     mlb = MultiLabelBinarizer(
         classes=list(range(0, 12))
@@ -70,7 +71,8 @@ def train(verbose=False):
 
     t_data =  time.time()
     times['data'] = t_data - t_start
-    print("\nTraining model...")
+    if verbose > 0:
+        print("\nTraining model...")
 
     # train model
     # (hyperparameters optimized by iterative randomized search and grid search as of 7/30/2019)
@@ -93,7 +95,8 @@ def train(verbose=False):
 
     t_train = time.time()
     times['train'] = t_train - t_data
-    print("\nGenerating predictions...")
+    if verbose > 0:
+        print("\nGenerating predictions...")
     
     # get predictions
     Y_pred = clf.predict(X_test)
@@ -102,12 +105,14 @@ def train(verbose=False):
     t_predict = time.time()
     times['predict'] = t_predict - t_train
 
-    for i in range(5):
-        print("\ngt:\t{}".format(Y_test[i]))
-        print("pred:\t{}".format(Y_pred[i]))
+    if verbose > 0:
+        for i in range(5):
+            print("\ngt:\t{}".format(Y_test[i]))
+            print("pred:\t{}".format(Y_pred[i]))
     
     new_acc = accuracy_score(Y_test, Y_pred)
-    print("\nAccuracy score:\t{}".format(new_acc))
+    if verbose > 0:
+        print("\nAccuracy score:\t{}".format(new_acc))
 
     t_metrics = time.time()
     times['metrics'] = t_metrics - t_predict
@@ -122,7 +127,7 @@ def train(verbose=False):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Train and validate random forest classifier.'
+        description='Stage 1: Determine notes in next chord (multi-label classification)'
         )
     parser.add_argument("-v", "--verbose",
         help="0: silent | 1: accuracy, output | \
