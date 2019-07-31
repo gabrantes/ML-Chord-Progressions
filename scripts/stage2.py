@@ -27,6 +27,7 @@ RANDOM_STATE = 42
 def train(verbose=False):
     times = {}
     t_start = time.time()
+    print("\nLoading data...")
 
     # read csv into DataFrame
     df = pd.read_csv(
@@ -67,22 +68,23 @@ def train(verbose=False):
     df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
     extra[['next_degree', 'next_seventh', 'next_inversion']] = df[['next_degree', 'next_seventh', 'next_inversion']].copy()
-    df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
+    df.drop(['next_degree'], axis=1, inplace=True)
 
     # train/test split
     X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1, random_state=RANDOM_STATE)
 
     t_data =  time.time()
-    times['data'] = t_data - t_start    
+    times['data'] = t_data - t_start
+    print("\nTraining model...") 
 
     # train model
-    # (hyperparameters optimized by iterative randomized search and grid search)
+    # (hyperparameters optimized by iterative randomized search and grid search as of 7/30/2019)
     clf = RandomForestClassifier(
         n_estimators=270,        
         criterion='gini',
         bootstrap=False,
         max_features=2,
-        class_weight='balanced_subsample',
+        class_weight='balanced',
         random_state=RANDOM_STATE
         )
     clf.fit(X_train, Y_train)
@@ -98,6 +100,7 @@ def train(verbose=False):
 
     t_train = time.time()
     times['train'] = t_train - t_data
+    print("\nGenerating predictions...")
     
     # get predictions
     Y_pred = clf.predict(X_test)
@@ -105,6 +108,7 @@ def train(verbose=False):
 
     t_predict = time.time()
     times['predict'] = t_predict - t_train
+    print("\nScoring accuracy...")
     
     # score accuracy
     total_acc, notes_acc, inversion_acc, voicing_acc = metrics.accuracy_np(Y_test, Y_pred)
@@ -116,13 +120,14 @@ def train(verbose=False):
     })
     if verbose > 0:
         print("\nMetrics:")
-        print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])
-        hist = plt.hist(total_acc, bins='auto')
+        print(accuracy_df.describe().loc[['mean', 'std', '25%', '50%', '75%']])        
+        total_hist = plt.hist(total_acc, bins='auto', label='Total')
         plt.title("Accuracy Histogram")
         plt.xlabel("Accuracy")
         plt.ylabel("Count")
-        for i in range(len(hist[0])):
-            plt.text(hist[1][i], hist[0][i], "{:.2f}".format(hist[0][i]))
+        for i in range(len(total_hist[0])):
+            if total_hist[0][i] >= 25:
+                plt.text(total_hist[1][i], total_hist[0][i], "{:.0f}".format(total_hist[0][i]))
         plt.show(block=False)
 
     t_metrics = time.time()

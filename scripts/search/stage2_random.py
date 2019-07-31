@@ -14,6 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import make_scorer
 
 from utils.utils import search_report
+from utils import metrics
 
 import numpy as np
 import pandas as pd
@@ -49,22 +50,23 @@ def search():
 
     # feature selection
     # remove unnecessary info
-    extra = df[['tonic', 'maj_min']].copy()
     df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
-    extra[['next_degree', 'next_seventh', 'next_inversion']] = df[['next_degree', 'next_seventh', 'next_inversion']].copy()
-    df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
+    df.drop(['next_degree'], axis=1, inplace=True)
 
     # Setup parameters and distributions for Randomized Search
     param_dist = {
-        "n_estimators": [50, 100, 150, 200, 250, 300],
-        "max_features": [2, 4, 6, 8, 10, 12, 14, 16],
-        "bootstrap": [True, False],
+        'n_estimators': [200, 225, 250, 275, 300],
+        'max_features': [2, 4, 6],
+        'class_weight': ['balanced', 'balanced_subsample', None],
     }
     scorer = make_scorer(metrics.accuracy_score)
 
     # train model
-    clf = RandomForestClassifier()
+    clf = RandomForestClassifier(
+        bootstrap=False,
+        criterion='entropy'
+    )
     n_iter_search = 20
     random_search = RandomizedSearchCV(
         estimator=clf,

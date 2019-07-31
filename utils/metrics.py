@@ -35,7 +35,7 @@ def accuracy(gt_next, pred_next):
     gt_set = set([note % 12 for note in gt_next])
     pred_set = set([note % 12 for note in pred_next])
 
-    # score 
+    # score notes
     notes_score = len(gt_set.intersection(pred_set)) / len(gt_set.union(pred_set))
 
     # score inversion (bass note)

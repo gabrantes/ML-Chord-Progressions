@@ -96,10 +96,9 @@ def train(verbose=False):
     # train stage 1 model
     print("\nTraining stage 1...")
     stage1_model = RandomForestClassifier(
-        n_estimators=256,
+        n_estimators=100,
         random_state=RANDOM_STATE,
-        bootstrap=True,
-        max_features=4,
+        bootstrap=False,
         class_weight='balanced'
         )
     stage1_model.fit(stage1_train, stage1_gt)
@@ -112,12 +111,12 @@ def train(verbose=False):
     stage2_train = B_feat.copy()
     stage2_train.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     stage2_train.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
-    stage2_train.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
+    stage2_train.drop(['next_degree'], axis=1, inplace=True)
 
     stage2_test = A_feat.copy()
     stage2_test.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     stage2_test.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
-    stage2_test.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
+    stage2_test.drop(['next_degree'], axis=1, inplace=True)
 
     for i in range(12):
         stage2_train[str(i)] = stage1_pred[:, i].tolist()
@@ -127,11 +126,11 @@ def train(verbose=False):
     # train stage 2 model
     print("\nTraining stage 2...")
     stage2_model = RandomForestClassifier(
-        n_estimators=256,
+        n_estimators=270,
         random_state=RANDOM_STATE,
-        bootstrap=True,
-        max_features=4,
-        class_weight='balanced_subsample'
+        bootstrap=False,
+        max_features=2,
+        class_weight='balanced'
         )
     stage2_model.fit(stage2_train, B_gt)
     
@@ -162,6 +161,9 @@ def train(verbose=False):
         plt.show()
 
     exit()
+    """
+    LEFT OFF HERE
+    """
 
     # transform raw model output and format into DataFrame
     out_df = pd.DataFrame(

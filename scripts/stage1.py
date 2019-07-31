@@ -27,6 +27,7 @@ RANDOM_STATE = 42
 def train(verbose=False):
     times = {}
     t_start = time.time()
+    print("\nLoading data...")
 
     # read csv into DataFrame
     df = pd.read_csv(
@@ -64,20 +65,19 @@ def train(verbose=False):
     df.drop(['cur_s', 'cur_a', 'cur_t','cur_b'], axis=1, inplace=True)
     df.drop(['next_inversion'], axis=1, inplace=True)
 
-    print(df.head())
-
     # train/test split
     X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1, random_state=RANDOM_STATE)
 
     t_data =  time.time()
     times['data'] = t_data - t_start
+    print("\nTraining model...")
 
     # train model
+    # (hyperparameters optimized by iterative randomized search and grid search as of 7/30/2019)
     clf = RandomForestClassifier(
-        n_estimators=256,
+        n_estimators=100,
         random_state=RANDOM_STATE,
-        bootstrap=True,
-        max_features=4,
+        bootstrap=False,
         class_weight='balanced'
         )
     clf.fit(X_train, Y_train)
@@ -93,6 +93,7 @@ def train(verbose=False):
 
     t_train = time.time()
     times['train'] = t_train - t_data
+    print("\nGenerating predictions...")
     
     # get predictions
     Y_pred = clf.predict(X_test)

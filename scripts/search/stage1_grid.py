@@ -51,15 +51,13 @@ def search():
     
     # Setup parameters and distributions for Grid Search
     param_dist = {
-        'max_depth': [3, 5, 7, 9, 11, 13, 15, None]
+        'bootstrap': [True, False]
     }
 
     # train model
     clf = RandomForestClassifier(
         n_estimators=100,
-        max_features=2,
         criterion='gini',
-        bootstrap=False,
         class_weight='balanced'
     )
     grid_search = GridSearchCV(

@@ -51,10 +51,10 @@ def search():
     
     # Setup parameters and distributions for Randomized Search
     param_dist = {
-        "n_estimators": [150, 175, 200, 225, 250],
-        "max_features": [2, 3, 4],
-        "criterion": ["gini", "entropy"],
-        "class_weight": ["balanced", "balanced_subsample"]
+        'n_estimators': [150, 175, 200, 225, 250],
+        'max_features': [2, 3, 4],
+        'criterion': ['gini', 'entropy'],
+        'class_weight': ['balanced', 'balanced_subsample']
     }
 
     # train model

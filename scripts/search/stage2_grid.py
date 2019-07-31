@@ -14,6 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import make_scorer
 
 from utils.utils import search_report
+from utils import metrics
 
 import numpy as np
 import pandas as pd
@@ -49,23 +50,21 @@ def search():
 
     # feature selection
     # remove unnecessary info
-    extra = df[['tonic', 'maj_min']].copy()
     df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
     df.drop(['cur_degree', 'cur_seventh', 'cur_inversion'], axis=1, inplace=True)
-    extra[['next_degree', 'next_seventh', 'next_inversion']] = df[['next_degree', 'next_seventh', 'next_inversion']].copy()
-    df.drop(['next_degree', 'next_seventh', 'next_inversion'], axis=1, inplace=True)
+    df.drop(['next_degree'], axis=1, inplace=True)
 
     # Setup parameters and distributions for Grid Search
     param_dist = {
-        "n_estimators": [265, 270, 275, 280, 285]
+        'class_weight': ['balanced', 'balanced_subsample']
     }
     scorer = make_scorer(metrics.accuracy_score)
 
     # train model
     clf = RandomForestClassifier(
+        n_estimators=270,
+        criterion='gini',
         bootstrap=False,
-        class_weight="balanced_subsample",
-        criterion="gini",
         max_features=2
     )
     grid_search = GridSearchCV(
