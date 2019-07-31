@@ -209,12 +209,14 @@ def train(verbose=False):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Links the Stage 1 Model and the Stage 2 Model for prototyping joint \
-            inferrence/evaluation.'
-        )
+        description='Links the Stage 1 Model and the Stage 2 Model for prototyping joint inferrence/evaluation.',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("-v", "--verbose",
-        help="0: silent | 1: accuracy, output | \
-            2: dataset distribution, feature importances, accuracy, output | DEFAULT: 1",
+        help="0: silent \
+            \n1: accuracy, output \
+            \n2: dataset distribution, feature importances, accuracy, output \
+            \nDEFAULT: 1",
         default=1)
     args = parser.parse_args()
 

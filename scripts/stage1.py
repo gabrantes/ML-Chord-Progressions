@@ -127,11 +127,14 @@ def train(verbose=1):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Stage 1: Determine notes in next chord (multi-label classification)'
-        )
+        description='Stage 1: Determine notes in next chord (multi-label classification)',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("-v", "--verbose",
-        help="0: silent | 1: accuracy, output | \
-            2: dataset distribution, feature importances, accuracy, output | DEFAULT: 1",
+        help="0: silent \
+            \n1: accuracy, output \
+            \n2: dataset distribution, feature importances, accuracy, output \
+            \nDEFAULT: 1",
         default=1)
     args = parser.parse_args()
 

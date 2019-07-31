@@ -3,9 +3,17 @@ Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 7/21/2019
-Filename: train.py
+Filename: single_stage.py
 Description: 
-    Train and evaluate the single-stage model.
+    [WARNING: DEPRECATED] The first iteration of a model to predict chord voicings.
+
+    After experimentation, it was discovered that it is much more
+    effective to split the tasks into two random forests-- one to
+    determine the notes in the next chord, and the other to determine
+    the proper voicings.
+
+    Nevertheless, this script is kept simply for records' sake.
+    Also, used as a baseline metric for comparison with the multistage model.
 """
 
 from sklearn.model_selection import train_test_split
@@ -21,8 +29,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 import argparse
+import textwrap
 
 def train(verbose=False):
+    print("\n[WARNING: DEPRECATED] The first iteration of a model to predict chord voicings.")
+
     times = {}
     t_start = time.time()
 
@@ -34,6 +45,7 @@ def train(verbose=False):
         )
     
     if verbose > 1:
+        print("\nData Distribution:")
         print(df['maj_min'].value_counts(normalize=True))
         print("\n")
         print(df['next_degree'].value_counts(normalize=True))
@@ -157,11 +169,14 @@ def train(verbose=False):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Train and validate random forest classifier.'
-        )
+        description="[WARNING: DEPRECATED] The first iteration of a model to predict chord voicings.",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument("-v", "--verbose",
-        help="0: silent | 1: accuracy, output | \
-            2: dataset distribution, feature importances, accuracy, output | DEFAULT: 1",
+        help="0: silent \
+            \n1: accuracy, output \
+            \n2: dataset distribution, feature importances, accuracy, output \
+            \nDEFAULT: 1",
         default=1)
     args = parser.parse_args()
 
