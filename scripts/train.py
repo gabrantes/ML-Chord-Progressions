@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
 from utils.chorus.satb import Satb
-from utils.utils import num_to_note, get_chord_notes_np
+from utils.utils import num_to_note, get_chord_notes_np, num_to_note_np
 import utils.metrics as metrics
 
 import numpy as np
@@ -142,22 +142,24 @@ def train(verbose=1):
         )
 
     for val in extra.columns.values.tolist():
-        out_df[val] = extra[val]
-    out_df['tonic'] = out_df['tonic'].apply(num_to_note)
+        out_df[val] = extra[val]    
+
+    tonic_np = out_df['tonic'].to_numpy()
+    maj_min_np = out_df['maj_min'].to_numpy()
 
     # current chord voicings: int -> note
-    for key in ['cur_s', 'cur_a', 'cur_t', 'cur_b']:
-        out_df[key] = out_df[key].apply(num_to_note)
-    out_df['cur'] = out_df[['cur_s', 'cur_a', 'cur_t', 'cur_b']].values.tolist()
+    cur_chords = out_df[['cur_s', 'cur_a', 'cur_t', 'cur_b']].to_numpy()
+    out_df['cur'] = list(num_to_note_np(tonic_np, maj_min_np, cur_chords))
     out_df.drop(['cur_s', 'cur_a', 'cur_t', 'cur_b'], axis=1, inplace=True)
 
     # ground truth next chord: int -> note
-    gt_next = np.vectorize(num_to_note)(Y_test)
-    out_df['gt_next'] = gt_next.tolist()
+    out_df['gt_next'] = list(num_to_note_np(tonic_np, maj_min_np, Y_test))
 
     # predicted next chord: int -> note
-    pred_next = np.vectorize(num_to_note)(Y_pred)
-    out_df['pred_next'] = pred_next.tolist()
+    out_df['pred_next'] = list(num_to_note_np(tonic_np, maj_min_np, Y_pred))
+
+    out_df['tonic'] = out_df['tonic'].apply(num_to_note)  # TODO: FIX THIS! Ex: A# minor should be Bb minor
+    
 
     out_df['total_accuracy'] = total_acc
 
@@ -170,7 +172,7 @@ def train(verbose=1):
     if verbose > 0:
         print("\nOutput:")
         print(out_df.head())
-    out_df.to_csv('./output/stage2_output.csv')
+    out_df.to_csv('./output/output.csv')
 
     t_output = time.time()
     times['output'] = t_output - t_metrics   

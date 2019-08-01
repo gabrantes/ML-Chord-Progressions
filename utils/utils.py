@@ -63,25 +63,25 @@ def num_to_note(note_int: int, custom_map=None) -> str:
     note_str = rev_note_map[note_int % 12] + octave
     return note_str
 
-def num_to_note_key(note_int: int, key: int, qual: int) -> str:
+def num_to_note_key(tonic: int, maj_min: int, chord) -> list:
     """
-    Convert a musical pitch from integer representation to a string.
-    Determines enharmonic equivalent based on provided key.
+    Convert a chord from integer representation to a string.
+    Determines enharmonic equivalent based on provided key (tonic and maj_min).
 
     Args: 
-        note_int: The integer representation of a musical pitch.
-        key: (0 - 11), corresponding to (C - B)
-        qual: 1 for major, 0 for minor
+        tonic: (0 - 11), corresponding to (C - B)
+        maj_min: 1 for major, 0 for minor
+        chord: [soprano, alto, tenor, bass] as ints
 
     Returns:
-        The corresponding string for the pitch.
+        [soprano, alto, tenor, bass] as strings
     """
-    if key < 0 or key > 11:
-        raise ValueError("Invalid key. Key must be in range (0, 11).", key)
-    if qual < 0 or qual > 1:
-        raise ValueError("Invalid quality. Must be 1 for major, 0 for minor.", qual)
+    if tonic < 0 or tonic > 11:
+        raise ValueError("Invalid key. Key must be in range (0, 11).", tonic)
+    if maj_min < 0 or maj_min > 1:
+        raise ValueError("Invalid quality. Must be 1 for major, 0 for minor.", maj_min)
 
-    sig = (key, qual)
+    sig = (tonic, maj_min)
     custom_map = None
     
     if sig == (1, 1) or sig == (10, 0):  # DbM or Bbm
@@ -130,10 +130,31 @@ def num_to_note_key(note_int: int, key: int, qual: int) -> str:
             7: 'F##'
         }
 
-    return num_to_note(note_int, custom_map=custom_map)
+    return [num_to_note(note, custom_map=custom_map) for note in chord]
+
+def num_to_note_np(tonic, maj_min, chords):
+    """
+    Convert chords from integer representation to a string.
+    Determines enharmonic equivalents based on provided key (tonic and maj_min).
+
+    Args:
+        tonic: ndarray of tonics, shape = (X, 1)
+        maj_min: ndarray of maj_mins, shape = (X, 1)
+        chords: ndarray of chords, shape = (X, 4)
+    """
+    if not (tonic.shape[0] == maj_min.shape[0] and \
+        tonic.shape[0] == chords.shape[0]):
+        raise ValueError("All input ndarrays must have same size along axis 0.")
+    
+    converted_chords = np.empty_like(chords, dtype=np.dtype('U5'))
+
+    for i in range(chords.shape[0]):
+        converted_chords[i, :] = num_to_note_key(tonic[i], maj_min[i], chords[i, :])
+
+    return converted_chords   
 
 def search_report(results, n_top=5):
-    """ Utility function to report best scores from RandomizedSearchCV """
+    """ Utility function to report best scores from RandomizedSearchCV / GridSearchCV """
     for i in range(1, n_top + 1):
         candidates = np.flatnonzero(results['rank_test_score'] == i)
         for candidate in candidates:
@@ -187,8 +208,8 @@ def get_chord_notes_np(tonic, maj_min, degree, seventh):
     an ndarray as output.
     """
     if not (tonic.shape[0] == maj_min.shape[0] \
-        or tonic.shape[0] == degree.shape[0] \
-        or tonic.shape[0] == seventh.shape[0]):
+        and tonic.shape[0] == degree.shape[0] \
+        and tonic.shape[0] == seventh.shape[0]):
         raise ValueError("All input ndarrays must have same size along axis 0.")
 
     chord_notes = np.zeros((tonic.shape[0], 12), dtype=np.int8)
