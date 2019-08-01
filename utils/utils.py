@@ -133,8 +133,7 @@ def num_to_note_key(note_int: int, key: int, qual: int) -> str:
     return num_to_note(note_int, custom_map=custom_map)
 
 def search_report(results, n_top=5):
-    """Utility function to report best scores from RandomizedSearchCV
-    """
+    """ Utility function to report best scores from RandomizedSearchCV """
     for i in range(1, n_top + 1):
         candidates = np.flatnonzero(results['rank_test_score'] == i)
         for candidate in candidates:
@@ -144,3 +143,36 @@ def search_report(results, n_top=5):
                   results['std_test_score'][candidate]))
             print("Parameters: {0}".format(results['params'][candidate]))
             print("")
+
+def get_chord_notes(tonic, maj_min, degree, seventh):
+    if maj_min == 1:
+        # diatonic chords of major key
+        note_dict = {
+            1: [0, 4, 7, 11],
+            2: [2, 5, 9, 0],
+            3: [4, 7, 11, 2],
+            4: [5, 9, 0, 4],
+            5: [7, 11, 2, 5],
+            6: [9, 0, 4, 7],
+            7: [11, 2, 5, 9]
+        }
+    else:
+        # diatonic chords of minor key
+        note_dict = {
+            1: [0, 3, 7, 10],
+            2: [2, 5, 8, 0],
+            3: [3, 7, 10, 2],
+            4: [5, 8, 0, 3],
+            5: [7, 11, 2, 5],
+            6: [8, 0, 3, 7],
+            7: [11, 2, 5, 8]
+        }
+    note_list = note_dict[degree]  # select chord degree
+    note_list = [(note + tonic) for note in note_list]  # tranpose to specified tonic
+    if seventh == 0:
+        note_list = note_list[:-1]  # remove seventh note, if specified
+    note_list = [(note % 12) for note in note_list]
+    chord_notes = [0] * 12
+    for note in note_list:
+        chord_notes[note] = 1
+    return chord_notes
