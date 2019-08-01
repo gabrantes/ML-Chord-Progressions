@@ -28,6 +28,7 @@ import joblib
 import time
 import argparse
 
+MODEL_FILENAME = './model.joblib'
 RANDOM_STATE = 42
 
 def train(verbose=1):
@@ -101,6 +102,15 @@ def train(verbose=1):
 
     t_train = time.time()
     times['train'] = t_train - t_data
+
+    # saving model
+    if verbose > 0:
+        print("\nSaving model to disk...")
+    joblib.dump(clf, MODEL_FILENAME, compress=True)
+
+    # loading model
+    clf = joblib.load(MODEL_FILENAME)
+
     if verbose > 0:
         print("\nGenerating predictions...")
     
@@ -174,10 +184,7 @@ def train(verbose=1):
     if verbose > 0:
         print("\nOutput:")
         print(out_df.head())
-    out_df.to_csv('./output/output.csv')
-
-    # saving model
-    joblib.dump(clf, 'random_forest.joblib', compress=True)
+    out_df.to_csv('./output/output.csv')    
 
     t_output = time.time()
     times['output'] = t_output - t_metrics   
