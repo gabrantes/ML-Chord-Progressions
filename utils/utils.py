@@ -144,7 +144,11 @@ def search_report(results, n_top=5):
             print("Parameters: {0}".format(results['params'][candidate]))
             print("")
 
-def get_chord_notes(tonic, maj_min, degree, seventh):
+def get_chord_notes(tonic: int, maj_min: int, degree: int, seventh: int) -> list:
+    """
+    Given the key signature and degree/seventh of a chord, return the notes
+    belonging to that chord (with notes as ints).
+    """
     if maj_min == 1:
         # diatonic chords of major key
         note_dict = {
@@ -175,4 +179,19 @@ def get_chord_notes(tonic, maj_min, degree, seventh):
     chord_notes = [0] * 12
     for note in note_list:
         chord_notes[note] = 1
+    return chord_notes
+
+def get_chord_notes_np(tonic, maj_min, degree, seventh):
+    """
+    Same as get_chord_notes except it accepts ndarrays as input and returns
+    an ndarray as output.
+    """
+    if not (tonic.shape[0] == maj_min.shape[0] \
+        or tonic.shape[0] == degree.shape[0] \
+        or tonic.shape[0] == seventh.shape[0]):
+        raise ValueError("All input ndarrays must have same size along axis 0.")
+
+    chord_notes = np.zeros((tonic.shape[0], 12), dtype=np.int8)
+    for i in range(chord_notes.shape[0]):
+        chord_notes[i, :] = get_chord_notes(tonic[i], maj_min[i], degree[i], seventh[i])
     return chord_notes

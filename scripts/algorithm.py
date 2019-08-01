@@ -2,10 +2,10 @@
 Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
-Date: 7/21/2019
-Filename: stage1.py
+Date: 7/31/2019
+Filename: algorithm.py
 Description: 
-    Stage 1: Determine notes in next chord (multi-label classification)
+    Determine notes in next chord algorithmically.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -96,13 +96,13 @@ def train(verbose=1):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Stage 1: Determine notes in next chord (multi-label classification)',
+        description='Determine notes in next chord algorithmically.',
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument("-v", "--verbose",
         help="0: silent \
             \n1: accuracy, output \
-            \n2: dataset distribution, feature importances, accuracy, output \
+            \n2: dataset distribution, accuracy, output \
             \nDEFAULT: 1",
         default=1)
     args = parser.parse_args()
