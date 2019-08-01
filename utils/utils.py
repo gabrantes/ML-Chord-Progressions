@@ -71,7 +71,7 @@ def num_to_note_key(tonic: int, maj_min: int, chord) -> list:
     Args: 
         tonic: (0 - 11), corresponding to (C - B)
         maj_min: 1 for major, 0 for minor
-        chord: [soprano, alto, tenor, bass] as ints
+        chord: notes as ints
 
     Returns:
         [soprano, alto, tenor, bass] as strings
@@ -138,11 +138,11 @@ def num_to_note_np(tonic, maj_min, chords):
     Determines enharmonic equivalents based on provided key (tonic and maj_min).
 
     Args:
-        tonic: ndarray of tonics, shape = (X, 1)
-        maj_min: ndarray of maj_mins, shape = (X, 1)
+        tonic: ndarray of tonics, shape = (X,)
+        maj_min: ndarray of maj_mins, shape = (X,)
         chords: ndarray of chords, shape = (X, 4)
     """
-    if not (tonic.shape[0] == maj_min.shape[0] and \
+    if not (tonic.shape == maj_min.shape and \
         tonic.shape[0] == chords.shape[0]):
         raise ValueError("All input ndarrays must have same size along axis 0.")
     
@@ -151,7 +151,26 @@ def num_to_note_np(tonic, maj_min, chords):
     for i in range(chords.shape[0]):
         converted_chords[i, :] = num_to_note_key(tonic[i], maj_min[i], chords[i, :])
 
+    assert converted_chords.shape == chords.shape
+
     return converted_chords   
+
+def convert_key(tonic, maj_min):
+    """
+    Convert tonic from integer representation to a string.
+
+    Args:
+        tonic: ndarray of tonics, shape = (X,)
+        maj_min: ndarray of maj_mins, shape = (X,)
+    """
+    keys = num_to_note_np(tonic, maj_min, np.reshape(tonic, (tonic.shape[0], 1)))   
+    keys = np.squeeze(keys)
+    keys = np.where(
+        maj_min,
+        np.vectorize(lambda x: x[:-1] + "M")(keys),
+        np.vectorize(lambda x: x[:-1] + "m")(keys)
+    )
+    return keys
 
 def search_report(results, n_top=5):
     """ Utility function to report best scores from RandomizedSearchCV / GridSearchCV """
@@ -206,10 +225,12 @@ def get_chord_notes_np(tonic, maj_min, degree, seventh):
     """
     Same as get_chord_notes except it accepts ndarrays as input and returns
     an ndarray as output.
+
+    Args: each param is an ndarray of shape (X,)
     """
-    if not (tonic.shape[0] == maj_min.shape[0] \
-        and tonic.shape[0] == degree.shape[0] \
-        and tonic.shape[0] == seventh.shape[0]):
+    if not (tonic.shape == maj_min.shape \
+        and tonic.shape == degree.shape \
+        and tonic.shape == seventh.shape):
         raise ValueError("All input ndarrays must have same size along axis 0.")
 
     chord_notes = np.zeros((tonic.shape[0], 12), dtype=np.int8)

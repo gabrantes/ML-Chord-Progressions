@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
 from utils.chorus.satb import Satb
-from utils.utils import num_to_note, get_chord_notes_np, num_to_note_np
+from utils.utils import get_chord_notes_np, num_to_note_np, convert_key
 import utils.metrics as metrics
 
 import numpy as np
@@ -158,14 +158,15 @@ def train(verbose=1):
     # predicted next chord: int -> note
     out_df['pred_next'] = list(num_to_note_np(tonic_np, maj_min_np, Y_pred))
 
-    out_df['tonic'] = out_df['tonic'].apply(num_to_note)  # TODO: FIX THIS! Ex: A# minor should be Bb minor
-    
+    # convert key signature
+    out_df['key'] = list(convert_key(tonic_np, maj_min_np))
+    out_df.drop(['tonic', 'maj_min'], axis=1, inplace=True)
 
     out_df['total_accuracy'] = total_acc
 
     # rearrange / reorganize columns
     out_df = out_df[[
-        'tonic', 'maj_min', 'cur', 
+        'key', 'cur', 
         'next_degree', 'next_seventh', 'next_inversion',
         'gt_next', 'pred_next', 'total_accuracy']]
 
