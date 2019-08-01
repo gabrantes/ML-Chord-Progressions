@@ -8,12 +8,11 @@ Description:
     Perform grid search to optimize hyperparameters for stage 2.
 """
 
-from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import make_scorer
 
-from utils.utils import search_report
+from utils.utils import search_report, get_chord_notes_np
 from utils import metrics
 
 import numpy as np
@@ -31,15 +30,8 @@ def search():
         dtype=np.int8
         )
 
-    mlb = MultiLabelBinarizer(
-        classes=list(range(0, 12))
-    )
-
-    next_notes = mlb.fit_transform(
-        df[['next_s', 'next_a', 'next_t', 'next_b']].applymap(
-            lambda x: x % 12
-        ).values.tolist()
-    )
+    # THE ALGORITHM
+    next_notes = get_chord_notes_np(df['tonic'], df['maj_min'], df['next_degree'], df['next_seventh'])
     for i in range(12):
         df[str(i)] = next_notes[:, i].tolist()
 
@@ -56,7 +48,8 @@ def search():
 
     # Setup parameters and distributions for Grid Search
     param_dist = {
-        'class_weight': ['balanced', 'balanced_subsample']
+        'max_depth': [5, 10, 25, 50, 100, None],
+        'max_leaf_nodes': [50, 100, 250, None]
     }
     scorer = make_scorer(metrics.accuracy_score)
 
@@ -65,7 +58,8 @@ def search():
         n_estimators=270,
         criterion='gini',
         bootstrap=False,
-        max_features=2
+        max_features=2,
+        class_weight='balanced'
     )
     grid_search = GridSearchCV(
         estimator=clf,
