@@ -24,6 +24,7 @@ import utils.metrics as metrics
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import joblib
 import time
 import argparse
 
@@ -133,7 +134,7 @@ def train(verbose=1):
         plt.show(block=False)
 
     t_metrics = time.time()
-    times['metrics'] = t_metrics - t_predict   
+    times['metrics'] = t_metrics - t_predict
 
     # transform raw model output and format into DataFrame
     out_df = pd.DataFrame(
@@ -174,6 +175,9 @@ def train(verbose=1):
         print("\nOutput:")
         print(out_df.head())
     out_df.to_csv('./output/output.csv')
+
+    # saving model
+    joblib.dump(clf, 'random_forest.joblib', compress=True)
 
     t_output = time.time()
     times['output'] = t_output - t_metrics   
