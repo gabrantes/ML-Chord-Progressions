@@ -3,9 +3,14 @@ Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 7/31/2019
-Filename: algocombo.py
+Filename: train.py
 Description: 
-    Same as test_combo.py, except replaces stage 1 model with an algorithm.
+    The task of predicting voice chords is split into 2 parts:
+
+    (1) Getting the notes belonging to the next chord, which is
+        handled by an algorithm (get_chord_notes from utils.utils)
+    
+    (2) Predicting the next chord's voicings using a random forest.
 """
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -182,7 +187,7 @@ def train(verbose=1):
 
 if __name__ == "__main__":    
     parser  = argparse.ArgumentParser(
-        description='Stage 2: With stage 1 predictions (notes of next chord), predict voicings.',
+        description='Train and evaluate the random forest classifier for predicting chord voicings.',
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument("-v", "--verbose",
