@@ -3,19 +3,26 @@ Project: ML-Chord-Progressions
 Author: Gabriel Abrantes
 Email: gabrantes99@gmail.com
 Date: 8/1/2019
-Filename: routes.py
+Filename: app.py
 Description: 
-    Declare REST endpoint(s).
+    Defines the REST API backend using Flask.
 """
 
-from flask import request, jsonify, abort
-from backend import app
+from flask import Flask, request, jsonify, abort
 
 import numpy as np
 import joblib
 from utils.utils import get_chord_notes, num_to_note_key
 
 MODEL_FILENAME = './model.joblib'
+
+# Create Flask app
+app = Flask(__name__)
+
+@app.route('/api/')
+def init():
+    """ Jumpstart the server """
+    return 200
 
 @app.route('/api/predict', methods=['POST'])
 def send_predictions():
@@ -78,3 +85,6 @@ def get_predictions(data: dict) -> dict:
         print(e)
 
     return output_data
+
+if __name__ == "__main__":
+    app.run()
