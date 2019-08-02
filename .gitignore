@@ -3,7 +3,7 @@
 !seeds.csv
 
 # Sci-kit Learn model files
-*.joblib
+# *.joblib
 
 # Visual Studio Code
 .vscode/
