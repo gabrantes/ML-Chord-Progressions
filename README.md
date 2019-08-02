@@ -46,9 +46,9 @@ These instructions will get you a copy of the project up and running on your loc
    python scripts/preprocess.py
    ```
    
-2. Train model and output predictions to `./output/combo_output.csv`.
+2. Train model and save predictions to `./output/output.csv`.
    ```
-   python scripts/test_combo.py
+   python scripts/train.py
    ```
 
 ## Built With
