@@ -51,16 +51,14 @@ def valid_input(data: dict) -> bool:
 
 def get_predictions(data: dict) -> dict:
     """ Handles input/output to and from the random forest classifier """
+    output_data = None
+
     try:
-    # Calculating next chord notes
+        # Calculating next chord notes
         next_chord_notes = get_chord_notes(
             data['tonic'], data['maj_min'], data['next_degree'], data['next_seventh']
             )
-    except Exception as e:
-        print(e)
-        return None
 
-    try:
         clf_input = np.empty((18))
         clf_input[0:4] = data['cur_chord']
         clf_input[5] = data['next_seventh']
@@ -74,8 +72,9 @@ def get_predictions(data: dict) -> dict:
         raw_pred = clf.predict(clf_input[np.newaxis, :])
         raw_pred = np.squeeze(raw_pred)
         pred = num_to_note_key(data['tonic'], data['maj_min'], raw_pred.tolist())
+
+        output_data = {"pred_next": pred}
     except Exception as e:
         print(e)
-        return None
 
-    return {"pred_next": pred}
+    return output_data
