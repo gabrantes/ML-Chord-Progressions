@@ -76,14 +76,17 @@ def get_predictions(data: dict) -> dict:
         clf = joblib.load(MODEL_FILENAME)
 
         # Process predictions
+        print("Making predictions...")
         raw_pred = clf.predict(clf_input[np.newaxis, :])
         raw_pred = np.squeeze(raw_pred)
+        print("Converting predictions...")
         pred = num_to_note_key(data['tonic'], data['maj_min'], raw_pred.tolist())
 
         output_data = {"pred_next": pred}
     except Exception as e:
         print(e)
 
+    print("Returning predictions...")
     return output_data
 
 if __name__ == "__main__":
