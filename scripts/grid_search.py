@@ -48,16 +48,17 @@ def search():
 
     # Setup parameters and distributions for Grid Search
     param_dist = {
-        'n_estimators': [25, 50, 100, 150, 200]
+        'n_estimators': [25, 50],
     }
     scorer = make_scorer(metrics.accuracy_score)
 
     # train model
     clf = RandomForestClassifier(
-        criterion='gini',
+        n_estimators=25,
         bootstrap=False,
-        max_features=2,
-        class_weight='balanced'
+        criterion='entropy',
+        class_weight='balanced',
+        max_features=8
     )
     grid_search = GridSearchCV(
         estimator=clf,

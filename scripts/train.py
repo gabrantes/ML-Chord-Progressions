@@ -29,8 +29,7 @@ import pickle
 import time
 import argparse
 
-# MODEL_FILENAME = './model.joblib'
-MODEL_FILENAME = './model.pkl'
+MODEL_FILENAME = './model.joblib'
 RANDOM_STATE = 42
 
 def train(verbose=1):
@@ -82,20 +81,12 @@ def train(verbose=1):
         print("\nTraining model...") 
 
     # train model
-    # (hyperparameters optimized by iterative randomized search and grid search as of 7/30/2019)
-    # clf = RandomForestClassifier(
-    #     n_estimators=270,        
-    #     criterion='gini',
-    #     bootstrap=False,
-    #     max_features=2,
-    #     class_weight='balanced',
-    #     random_state=RANDOM_STATE
-    #     )
+    # (hyperparameters optimized by iterative randomized search and grid search as of 8/3/2019)
     clf = RandomForestClassifier(
         n_estimators=25,        
-        criterion='gini',
+        criterion='entropy',
         bootstrap=False,
-        max_features=2,
+        max_features=8,
         class_weight='balanced',
         random_state=RANDOM_STATE
         )
@@ -116,14 +107,9 @@ def train(verbose=1):
     # saving model
     if verbose > 0:
         print("\nSaving model to disk...")
-    # joblib.dump(clf, MODEL_FILENAME, compress=True)
-    with open(MODEL_FILENAME, 'wb') as f:
-        pickle.dump(clf, f)
+    joblib.dump(clf, MODEL_FILENAME)
 
-    # loading model
-    with open(MODEL_FILENAME, 'rb') as f:
-        clf = pickle.load(f)
-    # clf = joblib.load(MODEL_FILENAME)
+    clf = joblib.load(MODEL_FILENAME)
 
     if verbose > 0:
         print("\nGenerating predictions...")

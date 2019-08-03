@@ -48,18 +48,18 @@ def search():
 
     # Setup parameters and distributions for Randomized Search
     param_dist = {
-        'n_estimators': [200, 225, 250, 275, 300],
-        'max_features': [2, 4, 6],
+        'max_features': [2, 4, 6, 8, 10],
         'class_weight': ['balanced', 'balanced_subsample', None],
     }
     scorer = make_scorer(metrics.accuracy_score)
 
     # train model
     clf = RandomForestClassifier(
+        n_estimators=25,
         bootstrap=False,
-        criterion='entropy'
+        criterion='entropy',
     )
-    n_iter_search = 20
+    n_iter_search = 40
     random_search = RandomizedSearchCV(
         estimator=clf,
         param_distributions=param_dist,
