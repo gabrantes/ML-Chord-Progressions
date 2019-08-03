@@ -11,10 +11,10 @@ Description:
 from flask import Flask, request, jsonify, abort
 
 import numpy as np
-import joblib
+import pickle
 from utils.utils import get_chord_notes, num_to_note_key
 
-MODEL_FILENAME = './model.joblib'
+MODEL_FILENAME = 'model.pkl'
 
 # Create Flask app
 app = Flask(__name__)
@@ -73,7 +73,7 @@ def get_predictions(data: dict) -> dict:
         clf_input[6:] = next_chord_notes
 
         print("Loading model...")
-        clf = joblib.load(MODEL_FILENAME)
+        clf = pickle.load(MODEL_FILENAME)
 
         # Process predictions
         print("Making predictions...")
