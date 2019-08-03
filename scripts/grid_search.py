@@ -48,14 +48,12 @@ def search():
 
     # Setup parameters and distributions for Grid Search
     param_dist = {
-        'max_depth': [5, 10, 25, 50, 100, None],
-        'max_leaf_nodes': [50, 100, 250, None]
+        'n_estimators': [25, 50, 100, 150, 200]
     }
     scorer = make_scorer(metrics.accuracy_score)
 
     # train model
     clf = RandomForestClassifier(
-        n_estimators=270,
         criterion='gini',
         bootstrap=False,
         max_features=2,

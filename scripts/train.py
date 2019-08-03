@@ -25,10 +25,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
+import pickle
 import time
 import argparse
 
-MODEL_FILENAME = './model.joblib'
+# MODEL_FILENAME = './model.joblib'
+MODEL_FILENAME = './model.pkl'
 RANDOM_STATE = 42
 
 def train(verbose=1):
@@ -81,8 +83,16 @@ def train(verbose=1):
 
     # train model
     # (hyperparameters optimized by iterative randomized search and grid search as of 7/30/2019)
+    # clf = RandomForestClassifier(
+    #     n_estimators=270,        
+    #     criterion='gini',
+    #     bootstrap=False,
+    #     max_features=2,
+    #     class_weight='balanced',
+    #     random_state=RANDOM_STATE
+    #     )
     clf = RandomForestClassifier(
-        n_estimators=270,        
+        n_estimators=25,        
         criterion='gini',
         bootstrap=False,
         max_features=2,
@@ -106,16 +116,20 @@ def train(verbose=1):
     # saving model
     if verbose > 0:
         print("\nSaving model to disk...")
-    joblib.dump(clf, MODEL_FILENAME, compress=True)
+    # joblib.dump(clf, MODEL_FILENAME, compress=True)
+    with open(MODEL_FILENAME, 'wb') as f:
+        pickle.dump(clf, f)
 
     # loading model
-    clf = joblib.load(MODEL_FILENAME)
+    with open(MODEL_FILENAME, 'rb') as f:
+        clf = pickle.load(f)
+    # clf = joblib.load(MODEL_FILENAME)
 
     if verbose > 0:
         print("\nGenerating predictions...")
     
     # get predictions
-    Y_pred = clf.predict(X_test)
+    Y_pred = np.asarray(clf.predict(X_test), dtype=np.int8)
     Y_test = np.asarray(Y_test)
 
     t_predict = time.time()
