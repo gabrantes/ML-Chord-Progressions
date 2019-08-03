@@ -75,6 +75,9 @@ def train(verbose=1):
     # train/test split
     X_train, X_test, Y_train, Y_test = train_test_split(df, Y, test_size=0.1, random_state=RANDOM_STATE)
 
+    # print(X_train.values[50])  # [59 55 52 40  0  0  1  0  0  0  1  0  0  0  0  1  0  0]
+    # print(Y_train.values[50])  # [57 52 48 45]
+
     t_data =  time.time()
     times['data'] = t_data - t_start
     if verbose > 0:
@@ -107,9 +110,13 @@ def train(verbose=1):
     # saving model
     if verbose > 0:
         print("\nSaving model to disk...")
-    joblib.dump(clf, MODEL_FILENAME)
 
-    clf = joblib.load(MODEL_FILENAME)
+    model_filename = 'model.pkl'
+    with open(model_filename, 'wb') as f:
+        pickle.dump(clf, f)
+
+    with open(model_filename, 'rb') as f:
+        clf = pickle.load(f)
 
     if verbose > 0:
         print("\nGenerating predictions...")

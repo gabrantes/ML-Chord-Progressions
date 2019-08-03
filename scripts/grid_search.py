@@ -54,7 +54,6 @@ def search():
 
     # train model
     clf = RandomForestClassifier(
-        n_estimators=25,
         bootstrap=False,
         criterion='entropy',
         class_weight='balanced',
