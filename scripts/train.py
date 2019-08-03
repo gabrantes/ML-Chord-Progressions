@@ -29,7 +29,6 @@ import pickle
 import time
 import argparse
 
-MODEL_FILENAME = './model.joblib'
 RANDOM_STATE = 42
 
 def train(verbose=1):
