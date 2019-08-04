@@ -13,7 +13,7 @@ from setuptools import setup
 
 setup(
     name='chordnet_prediction_routine',
-    version='0.1',
+    version='0.2',
     scripts=['predictor.py', 'utils.py']
 )
 

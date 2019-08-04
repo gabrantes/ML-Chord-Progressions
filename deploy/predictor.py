@@ -8,8 +8,8 @@ Description:
     Defines a Predictor class for custom prediction
     routines when deployed on Google Cloud AI Platform.
 """
-
-import utils
+from utils import get_chord_notes_np, num_to_note_np
+import os
 import numpy as np
 import pickle
 
@@ -47,7 +47,7 @@ class Predictor(object):
         
         preprocessed_inputs[:, 0:4] = inputs[:, 2:6]  # current chord voicings
         preprocessed_inputs[:, 4:6] = inputs[:, -2:]  # next chord seventh and inversion
-        preprocessed_inputs[:, 6:] = utils.get_chord_notes_np(
+        preprocessed_inputs[:, 6:] = get_chord_notes_np(
             inputs[:, 0],   # tonic
             inputs[:, 1],   # maj_min
             inputs[:, -3],  # next chord degree
@@ -56,7 +56,7 @@ class Predictor(object):
 
         outputs = np.asarray(self._model.predict(preprocessed_inputs), dtype=np.int8)
 
-        processed_outputs = utils.num_to_note_np(
+        processed_outputs = num_to_note_np(
             inputs[:, 0],  # tonic
             inputs[:, 1],  # maj_min
             outputs        # model outputs (predicted chord voicings as ints)
