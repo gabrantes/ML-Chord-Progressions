@@ -5,7 +5,7 @@ Email: gabrantes99@gmail.com
 Date: 8/3/2019
 Filename: setup.py
 Description: 
-    Packages all necessary scripts/files for deployment on
+    Packages 'deploy/' as a module for deployment on
     Google Cloud Platform.
 """
 

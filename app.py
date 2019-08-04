@@ -6,6 +6,9 @@ Date: 8/1/2019
 Filename: app.py
 Description: 
     Defines the REST API backend using Flask.
+
+    (Deprecated, abandoned in favor of deployment on
+    Google Cloud Platform)
 """
 
 from flask import Flask, request, jsonify, abort
