@@ -13,8 +13,8 @@ from setuptools import setup
 
 setup(
     name='chordnet_prediction_routine',
-    version='0.2',
-    scripts=['predictor.py', 'utils.py']
+    version='0.6',
+    packages=['deploy']
 )
 
 # Run python setup.py sdist --formats=gztar
