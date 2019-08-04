@@ -6,6 +6,9 @@
 *.joblib
 *.pkl
 
+# tarballs
+*.tar.gz
+
 # JSON
 *.json
 
