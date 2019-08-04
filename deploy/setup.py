@@ -17,4 +17,4 @@ setup(
     scripts=['predictor.py', 'utils.py']
 )
 
-# Run python setup.py sdist --formats=gzta
+# Run python setup.py sdist --formats=gztar
