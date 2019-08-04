@@ -8,7 +8,7 @@ Description:
     Defines a Predictor class for custom prediction
     routines when deployed on Google Cloud AI Platform.
 """
-from utils import get_chord_notes_np, num_to_note_np
+from deploy.utils import get_chord_notes_np, num_to_note_np
 import os
 import numpy as np
 import pickle
@@ -79,6 +79,7 @@ class Predictor(object):
             An instance implementing this Predictor class.
         """
         model_path = os.path.join(model_dir, 'model.pkl')
-        model = pickle.load(model_path)
+        with open(model_path, 'rb') as f:
+            model = pickle.load(f)
 
         return cls(model)
