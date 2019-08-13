@@ -10,6 +10,7 @@ numpy = "*"
 pandas = "*"
 scikit-learn = "==0.20.2"
 matplotlib = "*"
+flask = "*"
 
 [requires]
 python_version = "3.7"
