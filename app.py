@@ -22,7 +22,7 @@ app = Flask(__name__)
 @app.route('/api/wakeup')
 def init():
     """ Jumpstart the server """
-    return 200
+    return str(200)
 
 @app.route('/api/predict', methods=['POST'])
 def send_predictions():
