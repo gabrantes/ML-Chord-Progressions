@@ -12,6 +12,7 @@ scikit-learn = "==0.20.2"
 matplotlib = "*"
 flask = "*"
 gunicorn = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.7"

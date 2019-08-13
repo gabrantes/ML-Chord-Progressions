@@ -9,6 +9,7 @@ Description:
 """
 
 from flask import Flask, request, jsonify, abort
+from flask_cors import CORS
 
 import numpy as np
 import pickle
@@ -18,6 +19,7 @@ MODEL_FILENAME = './model.pkl'
 
 # Create Flask app
 app = Flask(__name__)
+cors = CORS(app)
 
 @app.route('/api/wakeup')
 def init():
