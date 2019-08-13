@@ -2,10 +2,6 @@
 *.csv
 !seeds.csv
 
-# Sci-kit Learn model files
-*.joblib
-*.pkl
-
 # tarballs
 *.tar.gz
 
