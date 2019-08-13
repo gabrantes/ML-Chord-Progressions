@@ -11,6 +11,7 @@ pandas = "*"
 scikit-learn = "==0.20.2"
 matplotlib = "*"
 flask = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
