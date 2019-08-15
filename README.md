@@ -2,6 +2,8 @@
 
 In traditional music theory, there are many rules, guidelines and exceptions when writing chord progressions for four voice parts. This is also referred to as four-part harmony. This project uses a random forest to predict chord voicings for four-part harmonies.
 
+See the model in action here: [https://gabrantes.github.io/chordnet](https://gabrantes.github.io/chordnet)
+
 &nbsp;
 
 ## Table of Contents
@@ -11,7 +13,6 @@ In traditional music theory, there are many rules, guidelines and exceptions whe
    * [Installation](#installation)
    * [Running](#running)
 * [Dataset](#dataset)
-* [Metrics](#metrics)
 * [Prediction](#prediction)
    * [Stage 1](#stage-1)
    * [Stage 2](#stage-2)
@@ -78,13 +79,6 @@ Over 500 unique chord progressions were extracted from *Tonal Harmony (Kostka & 
 Categorical features were transformed using ordinal encoding. For example, chord degree was encoded as integers 1 through 7.
 
 Musical pitches were also encoded as integers, given the fact that there are 12 half-steps in 1 octave. For example, C0 corresponds to 0, C#0 to 1, D0 to 2, ..., B0 to 11, C1 to 12, etc.
-
-&nbsp;
-
-
-## Metrics
-
-Since Scikit-Learn does not support metrics for multi-output multi-class classification, a custom metric for accuracy was coded. This metric was later used when performing random search and grid search.
 
 &nbsp;
 
